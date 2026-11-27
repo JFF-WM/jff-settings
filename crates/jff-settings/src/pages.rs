@@ -157,7 +157,7 @@ pub fn build() -> Vec<Page> {
         Page {
             id: "appearance",
             title: "Appearance",
-            keywords: "gaps corners radius border color decorations title bar osd font",
+            keywords: "gaps corners radius border color decorations title bar osd font maximize fill",
             body: Body::Groups(appearance()),
         },
         Page {
@@ -169,13 +169,13 @@ pub fn build() -> Vec<Page> {
         Page {
             id: "multitasking",
             title: "Multitasking",
-            keywords: "workspaces hot corner overview switcher alt tab wall drag maximize focus follows mouse warp",
+            keywords: "workspaces hot corner overview switcher alt tab wall drag maximize focus follows mouse warp zoom magnifier edge close kill unresponsive clipboard history",
             body: Body::Groups(multitasking()),
         },
         Page {
             id: "containers",
             title: "Containers",
-            keywords: "tiling groups tile layout name match app id title tag",
+            keywords: "tiling groups tile layout name match app id title tag remember hide behind",
             body: Body::Containers,
         },
         Page {
@@ -217,7 +217,7 @@ pub fn build() -> Vec<Page> {
         Page {
             id: "system",
             title: "System",
-            keywords: "screenshots log file level folder clipboard",
+            keywords: "screenshots log file level folder clipboard history power button suspend gpu render device",
             body: Body::Groups(system()),
         },
     ]
@@ -469,6 +469,12 @@ fn appearance() -> Vec<Group> {
                     "Ask windows not to draw their own title bar",
                     false,
                 ),
+                flag(
+                    &["maximize-fill"],
+                    "Maximized Windows Fill the Screen",
+                    "No gap, border or rounded corners around a maximized window. Off gives them back",
+                    true,
+                ),
             ],
         ),
         group(
@@ -600,6 +606,13 @@ fn effects() -> Vec<Group> {
             ),
             list(
                 &["blur"],
+                "only-layer",
+                "Only These Panels Are Blurred",
+                "Panel Namespace",
+                "Add a Panel Namespace",
+            ),
+            list(
+                &["blur"],
                 "ignore-window",
                 "Apps Never Blurred",
                 "App ID",
@@ -684,6 +697,18 @@ fn multitasking() -> Vec<Group> {
                     false,
                 ),
                 flag(
+                    &["focus-new-windows"],
+                    "Focus New Windows",
+                    "Off stops a new window from taking the keyboard while you type in another one",
+                    true,
+                ),
+                flag(
+                    &["edge-warp"],
+                    "Edge Warp",
+                    "Pushing the pointer into the edge of a display with no neighbour there sends it to the next display",
+                    false,
+                ),
+                flag(
                     &["warp-mouse-to-focus"],
                     "Mouse Follows Focus",
                     "The pointer jumps to a window that gets focus by other means, like Alt+Tab. Use it with Focus Follows Mouse",
@@ -725,6 +750,14 @@ fn multitasking() -> Vec<Group> {
                     5_000,
                     250,
                 ),
+                int(
+                    &["hot-corner", "touch-size"],
+                    "Touch Corner Size",
+                    "The corner a finger starts the swipe in, in pixels, 0 for no touch hot corner",
+                    0,
+                    200,
+                    48,
+                ),
             ],
         )
         .gated()
@@ -755,11 +788,37 @@ fn multitasking() -> Vec<Group> {
                     2_000,
                     120,
                 ),
+                flag(
+                    &["switcher", "group-containers"],
+                    "Group Containers",
+                    "A tiling container is one entry with all its windows in it",
+                    true,
+                ),
             ],
         ),
         group(
             "Overview",
             vec![
+                flag(
+                    &["overview", "auto-open"],
+                    "Open on an Empty Display",
+                    "Opens the overview when the display in use has no windows",
+                    true,
+                ),
+                int(
+                    &["overview", "animation-ms"],
+                    "Animation Duration",
+                    "How long it takes to open and close, in milliseconds, 0 for none",
+                    0,
+                    2_000,
+                    320,
+                ),
+                flag(
+                    &["overview", "blur"],
+                    "Blur Frames and Search",
+                    "Needs blur turned on",
+                    false,
+                ),
                 int(
                     &["overview", "selection-width"],
                     "Selection Outline",
@@ -773,8 +832,90 @@ fn multitasking() -> Vec<Group> {
                     "Selection Color",
                     "#598cf299",
                 ),
+                int(
+                    &["overview", "border"],
+                    "Workspace Border",
+                    "Border around the workspace squares, in pixels, 0 for none",
+                    0,
+                    64,
+                    2,
+                ),
+                field(
+                    &["overview", "border-color"],
+                    "Workspace Border Color",
+                    "",
+                    Kind::Color {
+                        default: "#ebedf980",
+                        optional: true,
+                    },
+                ),
+                field(
+                    &["overview", "backdrop-color"],
+                    "Backdrop Color",
+                    "Laid over the whole display behind the workspaces",
+                    Kind::Color {
+                        default: "#101018ff",
+                        optional: true,
+                    },
+                ),
+                field(
+                    &["overview", "search-background-color"],
+                    "Search Background",
+                    "The search box and the grid of apps",
+                    Kind::Color {
+                        default: "#1c1c23ff",
+                        optional: true,
+                    },
+                ),
+                field(
+                    &["overview", "search-font-color"],
+                    "Search Text Color",
+                    "",
+                    Kind::Color {
+                        default: "#f2f2f7ff",
+                        optional: true,
+                    },
+                ),
             ],
         ),
+        group(
+            "Overview Containers",
+            vec![
+                color(
+                    &["overview", "container-background-color"],
+                    "Background",
+                    "#0d0f1a66",
+                ),
+                int(
+                    &["overview", "container-border-width"],
+                    "Border Width",
+                    "In pixels, 0 for none",
+                    0,
+                    64,
+                    2,
+                ),
+                color(
+                    &["overview", "container-border-color"],
+                    "Border Color",
+                    "#bfc7e099",
+                ),
+                color(
+                    &["overview", "container-font-color"],
+                    "Name Color",
+                    "#f2f2f7ff",
+                ),
+                int(
+                    &["overview", "container-radius"],
+                    "Corner Radius",
+                    "In pixels. Follows the corner radius when not set",
+                    0,
+                    256,
+                    8,
+                )
+                .optional(),
+            ],
+        )
+        .described("How a tiling container looks in the overview"),
         group(
             "Workspace Wall",
             vec![
@@ -793,6 +934,84 @@ fn multitasking() -> Vec<Group> {
                     "Show Thumbnails",
                     "",
                     true,
+                ),
+            ],
+        )
+        .gated(),
+        group(
+            "Zoom",
+            vec![
+                float(
+                    &["zoom", "step"],
+                    "Zoom Step",
+                    "What one zoom-in multiplies the zoom by",
+                    (1.01, 4.0, 0.05, 2),
+                    1.2,
+                ),
+                float(
+                    &["zoom", "max"],
+                    "Maximum Zoom",
+                    "The most that zooming in goes to",
+                    (1.0, 64.0, 1.0, 1),
+                    20.0,
+                ),
+                choice(
+                    &["zoom", "tracking"],
+                    "Tracking",
+                    "How the part shown follows the pointer",
+                    &[
+                        ("proportional", "Proportional"),
+                        ("centered", "Centered"),
+                        ("push", "Push"),
+                        ("disabled", "Off"),
+                    ],
+                    "proportional",
+                ),
+                choice(
+                    &["zoom", "pointer"],
+                    "Pointer",
+                    "Scale magnifies it with the screen, Keep leaves it at its normal size",
+                    &[("scale", "Scale"), ("keep", "Keep Size"), ("hide", "Hide")],
+                    "scale",
+                ),
+                int(
+                    &["zoom", "animation-ms"],
+                    "Animation Duration",
+                    "How long a change of the zoom takes, in milliseconds",
+                    0,
+                    2_000,
+                    200,
+                ),
+                choice(
+                    &["zoom", "scroll-modifier"],
+                    "Scroll Modifier",
+                    "Hold it and scroll to zoom",
+                    &[
+                        ("Super", "Super"),
+                        ("Alt", "Alt"),
+                        ("Ctrl", "Ctrl"),
+                        ("Shift", "Shift"),
+                        ("none", "Off"),
+                    ],
+                    "Super",
+                ),
+            ],
+        ),
+        group(
+            "Unresponsive Windows",
+            vec![
+                flag(
+                    &["close-kill", "enable"],
+                    "Kill Windows That Don't Close",
+                    "Sends SIGKILL to the program of a window still open after it was asked to close. Every other window of that program and anything unsaved is lost",
+                    false,
+                ),
+                float(
+                    &["close-kill", "seconds"],
+                    "Wait Before Killing",
+                    "In seconds",
+                    (1.0, 3_600.0, 0.5, 1),
+                    5.0,
                 ),
             ],
         )
@@ -834,12 +1053,26 @@ fn displays() -> Vec<Group> {
         ),
         group(
             "Gaming",
-            vec![flag(
-                &["allow-tearing"],
-                "Allow Tearing",
-                "Lower latency in fullscreen games, at the cost of tearing",
-                false,
-            )],
+            vec![
+                flag(
+                    &["allow-tearing"],
+                    "Allow Tearing",
+                    "Lower latency in fullscreen games, at the cost of tearing",
+                    false,
+                ),
+                flag(
+                    &["force-tearing"],
+                    "Force Tearing",
+                    "With Allow Tearing, every fullscreen window that covers a display tears, even if it never asked. Games under Wine don't ask",
+                    false,
+                ),
+                flag(
+                    &["wine-single-output"],
+                    "Wine Sees One Display",
+                    "A Wine program is shown only the display in use when it starts",
+                    false,
+                ),
+            ],
         ),
     ]
 }
@@ -957,6 +1190,48 @@ fn system() -> Vec<Group> {
             ],
         ),
         group(
+            "Clipboard",
+            vec![
+                enable(&["clipboard"], "Keep Copies After an App Closes", false),
+                int(
+                    &["clipboard", "history"],
+                    "History Size",
+                    "How many copies are kept, 1 is only the latest",
+                    1,
+                    500,
+                    1,
+                ),
+                int(
+                    &["clipboard", "max-size"],
+                    "Largest Copy",
+                    "In MiB. A bigger copy is not kept",
+                    1,
+                    256,
+                    8,
+                ),
+            ],
+        )
+        .gated(),
+        group(
+            "Power",
+            vec![
+                choice(
+                    &["power-key"],
+                    "Power Button",
+                    "System leaves it to logind. Needs systemd-inhibit and systemctl",
+                    &[
+                        ("suspend", "Suspend"),
+                        ("power-off", "Power Off"),
+                        ("ignore", "Do Nothing"),
+                        ("system", "System Default"),
+                    ],
+                    "suspend",
+                ),
+                text(&["render-device"], "Graphics Card, Read at Startup"),
+            ],
+        )
+        .described("The graphics card is a path like /dev/dri/card1, the primary one when empty"),
+        group(
             "Logging",
             vec![
                 flag(&["log", "enable"], "Write a Log File", "", false),
@@ -1005,6 +1280,30 @@ pub fn output_fields() -> Vec<Field> {
             "Mode",
             "Read from wlr-randr. Automatic is the display's preferred mode",
             Kind::Mode,
+        ),
+        field(
+            &["scale"],
+            "Scale",
+            "Draws the desktop larger, from 0.25 to 10",
+            Kind::Float {
+                min: 0.25,
+                max: 10.0,
+                step: 0.25,
+                digits: 2,
+                default: 1.0,
+                optional: true,
+            },
+        ),
+        pick(
+            &["split"],
+            "Container Split",
+            "How a window that joins a tiling container here is split off. Needs tiling containers",
+            &[
+                ("auto", "Automatic"),
+                ("horizontal", "Side by Side"),
+                ("vertical", "One Above the Other"),
+            ],
+            "Default",
         ),
         pick(
             &["transform"],
@@ -1158,6 +1457,22 @@ pub fn rule_fields() -> Vec<Field> {
                 default: (800, 600),
             },
         ),
+        field(
+            &["open-position"],
+            "Open Position",
+            "Top-left corner from the top left of its display. The window floats",
+            Kind::Pair {
+                min: 0,
+                max: 16_384,
+                default: (0, 0),
+            },
+        ),
+        flag(
+            &["open-centered"],
+            "Open Centered",
+            "The middle of its display. The window floats",
+            false,
+        ),
         float(
             &["opacity"],
             "Opacity",
@@ -1191,6 +1506,30 @@ pub fn rule_fields() -> Vec<Field> {
             "Floating",
             "Keep the window at its own size",
             false,
+        ),
+        flag(
+            &["always-on-top"],
+            "Always on Top",
+            "Stays above the other windows, even a fullscreen one",
+            false,
+        ),
+        flag(
+            &["sticky"],
+            "On Every Workspace",
+            "Shown on every workspace of its display",
+            false,
+        ),
+        pick(
+            &["content-type"],
+            "Content Type",
+            "What the window shows, whatever its client says",
+            &[
+                ("game", "Game"),
+                ("video", "Video"),
+                ("photo", "Photo"),
+                ("none", "Ignore the Client"),
+            ],
+            "Default",
         ),
     ]
 }
@@ -1354,6 +1693,18 @@ pub fn container_groups() -> Vec<Group> {
             "Tiling Containers",
             "Groups of windows that tile among themselves. Needed by container rules, Open in Container and the container shortcuts",
             false,
+        ),
+        flag(
+            &["remember-container-layouts"],
+            "Remember Layouts",
+            "Windows tiled together again get the arrangement they had, until jff ends",
+            false,
+        ),
+        flag(
+            &["hide-behind-containers"],
+            "Hide Windows Behind a Container",
+            "While a container has the keyboard, the gaps between its tiles show the wallpaper",
+            true,
         )],
     )]
 }
@@ -1396,6 +1747,14 @@ pub fn cursor_groups() -> Vec<Group> {
                 "Milliseconds the pointer rests before it hides, 0 for never",
                 0,
                 600_000,
+                0,
+            ),
+            int(
+                &["cursor", "hide-after-idle"],
+                "Hide While Fullscreen",
+                "Seconds the pointer rests before it hides, only while the focused window is fullscreen. 0 for never",
+                0,
+                3_600,
                 0,
             ),
         ],

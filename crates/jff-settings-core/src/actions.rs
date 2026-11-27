@@ -29,6 +29,7 @@ pub const ACTIONS: &[(&str, ArgKind)] = &[
     ("close", ArgKind::None),
     ("minimize", ArgKind::None),
     ("unminimize", ArgKind::None),
+    ("focus-urgent", ArgKind::None),
     ("move-to-scratchpad", ArgKind::None),
     ("scratchpad", ArgKind::None),
     ("overview", ArgKind::None),
@@ -44,12 +45,20 @@ pub const ACTIONS: &[(&str, ArgKind)] = &[
     ("screenshot-window", ArgKind::None),
     ("toggle-shortcuts-inhibit", ArgKind::None),
     ("toggle-stats", ArgKind::None),
+    ("zoom-in", ArgKind::None),
+    ("zoom-out", ArgKind::None),
+    ("zoom-reset", ArgKind::None),
+    ("zoom-pan-left", ArgKind::None),
+    ("zoom-pan-right", ArgKind::None),
+    ("zoom-pan-up", ArgKind::None),
+    ("zoom-pan-down", ArgKind::None),
     // monitor: left, right, up, down, next, prev or a monitor name
     ("focus-monitor", ArgKind::Line),
     ("move-to-monitor", ArgKind::Line),
     ("move-workspace-to-monitor", ArgKind::Line),
     // containers (need `tiling-containers`)
     ("focus-container", ArgKind::Line),
+    ("spawn-container", ArgKind::Line),
     ("container-next", ArgKind::None),
     ("container-prev", ArgKind::None),
     ("container-drag", ArgKind::None),
@@ -57,6 +66,8 @@ pub const ACTIONS: &[(&str, ArgKind)] = &[
     ("save-container-layout", ArgKind::Line),
     ("apply-container-layout", ArgKind::Line),
     ("forward-key", ArgKind::Line),
+    ("suspend", ArgKind::None),
+    ("power-off", ArgKind::None),
     ("quit", ArgKind::None),
 ];
 
